@@ -1,36 +1,34 @@
 package com.example.demo.mvc;
 
-import com.example.demo.note.InterfaceNote;
-import com.example.demo.note.Note;
-import com.example.demo.note.NoteService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.dto.NoteDTO;
+import com.example.demo.note.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 @RequestMapping ("/note")
 @Controller
+@RequiredArgsConstructor
 public class NoteController {
 
-    @Autowired
-    InterfaceNote interfaceNote;
+
+     private final NoteService noteService;
+
+
 
     @GetMapping ("/list")
     public ModelAndView getListAllNotes() {
         ModelAndView result = new ModelAndView("index");
-        result.addObject("notes", interfaceNote.listAll());
+        result.addObject("notes", noteService.listAll());
         return result;
     }
 
     @PostMapping ("/delete/{id}")
     public ModelAndView deleteNote (@PathVariable("id") long id) {
         ModelAndView result = new ModelAndView("index");
-        interfaceNote.deleteById(id);
-        result.addObject("notes", interfaceNote.listAll());
+        noteService.deleteById(id);
+        result.addObject("notes", noteService.listAll());
         return result;
     }
 
@@ -38,18 +36,40 @@ public class NoteController {
     @GetMapping("/edit")
     public ModelAndView getEditNote(@RequestParam("id") long id) {
         ModelAndView result = new ModelAndView("edit");
-        result.addObject("note", interfaceNote.getById(id));
+        result.addObject("note", noteService.getById(id));
         return result;
     }
 
 
     @PostMapping ("/edit")
-    public ModelAndView getEditNote(@ModelAttribute("note") Note note) {
+    public ModelAndView getEditNote(@ModelAttribute("noteDTO") NoteDTO noteDTO) {
         ModelAndView result = new ModelAndView("index");
-        interfaceNote.update(note);
-        result.addObject("notes", interfaceNote.listAll());
+        Note note =  NoteDTO.fromDTO(noteDTO);
+        noteService.update(note);
+        result.addObject("notes", noteService.listAll());
         return result;
     }
+
+
+    @GetMapping("/create")
+    public ModelAndView openFormForSave() {
+        ModelAndView result = new ModelAndView("begin");
+    //    result.addObject("note", noteService.getById(id));
+        return result;
+    }
+
+
+    @PostMapping ("/create")
+    public ModelAndView saveInBase(@ModelAttribute("note") Note note) {
+        ModelAndView result = new ModelAndView("index");
+        noteService.add(note);
+        result.addObject("notes", noteService.listAll());
+        return result;
+    }
+
+
+
+
 
 }
 
